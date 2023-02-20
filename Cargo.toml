@@ -17,3 +17,5 @@ wee_alloc = "0.4.5"
 lto = true
 opt-level = 'z'
 panic="abort"
+strip = "debuginfo"
+codegen-units = 1
