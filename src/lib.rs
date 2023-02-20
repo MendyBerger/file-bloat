@@ -1,5 +1,6 @@
 #![feature(downcast_unchecked)]
 #![no_std]
+#[macro_use]
 extern crate alloc;
 extern crate wee_alloc;
 #[global_allocator]
