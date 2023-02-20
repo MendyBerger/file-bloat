@@ -1,12 +1,12 @@
-use core::mem;
-use core::any::Any;
+use core::fmt::Display;
 use alloc::boxed::Box;
+use alloc::string::String;
 use alloc::vec::Vec;
 
 
 #[no_mangle]
-pub fn test_u32(num: u32) -> usize {
-    let mut v: Vec<Box<dyn Any>> = Vec::new();
+pub fn test_u32(num: u32) -> String {
+    let mut v: Vec<Box<dyn Display>> = Vec::new();
     v.push(Box::new(2));
     v.push(Box::new(3));
     if num % 3 == 8 {
@@ -17,27 +17,30 @@ pub fn test_u32(num: u32) -> usize {
 
     v.shrink_to_fit();
     let cap = v.capacity();
-    mem::forget(v);
-    cap
+    let s: String = v
+        .into_iter()
+        .map(|n| format!("{n}"))
+        .collect();
+    format!("cap: {cap}, {s}")
 }
 #[no_mangle]
-pub fn test_u64(num: u64) -> bool {
-    let mut v: Vec<Box<dyn Any>> = Vec::new();
+pub fn test_u64(num: u64) -> String {
+    let mut v: Vec<Box<dyn Display>> = Vec::new();
     v.push(Box::new(54309));
     v.push(Box::new(4323));
+    v.push(Box::new(num));
 
-    for n in v {
-        let n = unsafe { n.downcast_ref_unchecked::<u64>() };
-        if n % &3 == num {
-            return true;
-        }
-    }
-    false
+    
+    let s = v
+        .into_iter()
+        .map(|n| format!("{n}"))
+        .collect();
+    s
 }
 
 #[no_mangle]
-pub fn test_char(c: char) -> char {
-    let mut v: Vec<Box<dyn Any>> = vec![
+pub fn test_char(c: char) -> String {
+    let mut v: Vec<Box<dyn Display>> = vec![
         Box::new('h'),
         Box::new('e'),
         Box::new('l'),
@@ -48,12 +51,17 @@ pub fn test_char(c: char) -> char {
     let rem = c as usize % 6;
     v.insert(rem, Box::new(c));
     let rem = c as usize % 5;
-    unsafe { *v[rem].downcast_ref_unchecked::<char>() }
+    
+    let s = v
+        .into_iter()
+        .map(|n| format!("{n} {rem}"))
+        .collect();
+    s
 }
 
 #[no_mangle]
-pub fn test_f64(num: f64) -> f64 {
-    let mut v: Vec<Box<dyn Any>> = vec![
+pub fn test_f64(num: f64) -> String {
+    let mut v: Vec<Box<dyn Display>> = vec![
         Box::new(0.9),
         Box::new(4324.2),
         Box::new(20.1),
@@ -65,15 +73,9 @@ pub fn test_f64(num: f64) -> f64 {
     let rem = num as usize % 6;
     v.insert(rem, Box::new(num));
 
-    let output = v
+    let s = v
         .into_iter()
-        .reduce(|p, n| {
-            let p = unsafe { p.downcast_unchecked::<f64>() };
-            let n = unsafe { n.downcast_unchecked::<f64>() };
-            Box::new(*n * *n + *p) as Box<dyn Any>
-        })
-        .unwrap_or(Box::new(0.0) as Box<dyn Any>);
-
-    let output = unsafe { output.downcast_unchecked::<f64>() };
-    *output
+        .map(|n| format!("{n}"))
+        .collect();
+    s
 }

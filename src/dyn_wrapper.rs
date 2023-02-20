@@ -1,20 +1,21 @@
-use core::mem;
-use core::{any::Any, marker::PhantomData};
+use core::fmt::Display;
+use core::{marker::PhantomData};
 use alloc::boxed::Box;
+use alloc::string::String;
 use alloc::vec::Vec;
 
 #[repr(transparent)]
 struct DynWrapper<T>
 where
-    T: Any,
+    T: Display + 'static,
 {
-    val: Box<dyn Any>,
+    val: Box<dyn Display>,
     _a: PhantomData<T>,
 }
 
 impl<T> DynWrapper<T>
 where
-    T: Any,
+    T: Display + 'static,
 {
     #[inline(always)]
     pub fn new(val: T) -> Self {
@@ -25,18 +26,14 @@ where
     }
 }
 
-impl<T> AsRef<T> for DynWrapper<T>
-where
-    T: Any,
-{
-    #[inline(always)]
-    fn as_ref(&self) -> &T {
-        unsafe { self.val.downcast_ref_unchecked::<T>() }
+impl<T: Display + 'static> Display for DynWrapper<T> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        self.val.fmt(f)
     }
 }
 
 #[no_mangle]
-pub fn test_u32(num: u32) -> usize {
+pub fn test_u32(num: u32) -> String {
     let mut v: Vec<DynWrapper<u32>> = Vec::new();
     v.push(DynWrapper::new(2));
     v.push(DynWrapper::new(3));
@@ -48,25 +45,29 @@ pub fn test_u32(num: u32) -> usize {
 
     v.shrink_to_fit();
     let cap = v.capacity();
-    mem::forget(v);
-    cap
+    let s: String = v
+        .into_iter()
+        .map(|n| format!("{n}"))
+        .collect();
+    format!("cap: {cap}, {s}")
 }
 #[no_mangle]
-pub fn test_u64(num: u64) -> bool {
+pub fn test_u64(num: u64) -> String {
     let mut v: Vec<DynWrapper<u64>> = Vec::new();
     v.push(DynWrapper::new(54309));
     v.push(DynWrapper::new(4323));
+    v.push(DynWrapper::new(num));
 
-    for n in v {
-        if n.as_ref() % &3 == num {
-            return true;
-        }
-    }
-    false
+    
+    let s = v
+        .into_iter()
+        .map(|n| format!("{n}"))
+        .collect();
+    s
 }
 
 #[no_mangle]
-pub fn test_char(c: char) -> char {
+pub fn test_char(c: char) -> String {
     let mut v: Vec<DynWrapper<char>> = vec![
         DynWrapper::new('h'),
         DynWrapper::new('e'),
@@ -78,11 +79,16 @@ pub fn test_char(c: char) -> char {
     let rem = c as usize % 6;
     v.insert(rem, DynWrapper::new(c));
     let rem = c as usize % 5;
-    *v[rem].as_ref()
+    
+    let s = v
+        .into_iter()
+        .map(|n| format!("{n} {rem}"))
+        .collect();
+    s
 }
 
 #[no_mangle]
-pub fn test_f64(num: f64) -> f64 {
+pub fn test_f64(num: f64) -> String {
     let mut v: Vec<DynWrapper<f64>> = vec![
         DynWrapper::new(0.9),
         DynWrapper::new(4324.2),
@@ -95,10 +101,9 @@ pub fn test_f64(num: f64) -> f64 {
     let rem = num as usize % 6;
     v.insert(rem, DynWrapper::new(num));
 
-    let output = v
+    let s = v
         .into_iter()
-        .reduce(|p, n| DynWrapper::new(*n.as_ref() * *n.as_ref() + *p.as_ref()))
-        .unwrap_or(DynWrapper::new(0.0));
-
-    *output.as_ref()
+        .map(|n| format!("{n}"))
+        .collect();
+    s
 }
