@@ -1,5 +1,5 @@
+use alloc::vec::Vec;
 use core::mem;
-use alloc::vec::{Vec};
 
 #[no_mangle]
 pub fn test_u32(num: u32) -> usize {

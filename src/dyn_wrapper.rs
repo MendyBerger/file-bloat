@@ -1,7 +1,7 @@
-use core::mem;
-use core::{any::Any, marker::PhantomData};
 use alloc::boxed::Box;
 use alloc::vec::Vec;
+use core::mem;
+use core::{any::Any, marker::PhantomData};
 
 #[repr(transparent)]
 struct DynWrapper<T>

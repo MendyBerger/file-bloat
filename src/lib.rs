@@ -17,5 +17,5 @@ pub fn panic(_: &core::panic::PanicInfo) -> ! {
 // then check the size of ./target/wasm32-unknown-unknown/release/file_bloat.wasm
 
 // pub mod generic;        // 7593 bytes
-// pub mod dyn_wrapper ;   // 8981 bytes
+// pub mod dyn_wrapper;    // 8981 bytes
 // pub mod dyn_explicit;   // 9359 bytes

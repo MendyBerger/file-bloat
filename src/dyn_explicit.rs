@@ -1,8 +1,7 @@
-use core::mem;
-use core::any::Any;
 use alloc::boxed::Box;
 use alloc::vec::Vec;
-
+use core::any::Any;
+use core::mem;
 
 #[no_mangle]
 pub fn test_u32(num: u32) -> usize {
